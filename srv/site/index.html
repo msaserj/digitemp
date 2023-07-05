@@ -1,0 +1,44 @@
+!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Temperature</title>
+    <style>
+        body {
+            background-color: #3a3a3a;
+            touch-action: pan-y;
+        }
+
+        .image-container {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin: 60px 3%;
+            gap: 50px;
+        }
+
+        .image-container img {
+            width: 740px;
+            height: auto;
+        }
+        @media screen and (max-width: 930px) {
+            img {
+                max-width: 100%;
+                height: auto;
+            }
+    </style>
+</head>
+<body>
+
+
+<div class="image-container">
+    <img src="graph3h.png" alt="temp">
+    <img src="graph12h.png" alt="temp">
+    <img src="graph24h.png" alt="temp">
+    <img src="graph7d.png" alt="temp">
+</div>
+</body>
+</html>
