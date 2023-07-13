@@ -2,6 +2,7 @@
 
 # Path to your RRD file
 rrd_file="/var/db/rrdtool/temperature.rrd"
+rrd_file1="/var/db/rrdtool/temperature_inside.rrd"
 
 # Path to save the graph image
 graph_3h="/home/msa/digitemp/site/graph3h.png"
@@ -87,6 +88,8 @@ create_graph() {
     CDEF:tm_03=temperature,0,LT,temperature,-6,LT,-6,temperature,IF,0,IF AREA:tm_03#00EEFF \
     CDEF:tm_02=temperature,0,LT,temperature,-4,LT,-4,temperature,IF,0,IF AREA:tm_02#00FFFF \
     CDEF:tm_01=temperature,0,LT,temperature,-2,LT,-2,temperature,IF,0,IF AREA:tm_01#CDFFFF \
+    DEF:temp="$rrd_file1":temp:AVERAGE \
+    LINE2:temp#004DFF:"Inside tC" \
     GPRINT:temperature:AVERAGE:"Average\: %3.2lfC" \
     GPRINT:temperature:MIN:"MIN\: %3.2lfC" \
     GPRINT:temperature:MAX:"MAX\: %3.2lfC" \
@@ -101,3 +104,5 @@ sleep 1
 create_graph "$graph_24h" "$start_24h" "$title24"
 sleep 1
 create_graph "$graph_7d" "$start_7d" "$title7d"
+
+
