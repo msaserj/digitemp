@@ -16,7 +16,6 @@ while IFS= read -r line; do
 
     timestamp=$(echo "$line" | awk '{print $3}')
 
-    # Convert timestamp to UNIX timestamp format
     # unix_timestamp=$(date -d "$timestamp" +"%s")
 
     # Update the RRD file with the temperature and timestamp
