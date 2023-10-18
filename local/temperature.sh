@@ -1,14 +1,25 @@
 #!/bin/bash
 
-# mapfile -t array <<< "$(digitemp_DS9097 -q -a -c /home/digitemp/.digitemprc | awk '{print $7}' | bc -l)"
-mapfile -t array <<< "$(digitemp_DS9097 -q -a -c /home/digitemp/.digitemprc_c)"
+# Путь к устройству /dev/ttyUSB0
+usb_device="/dev/ttyUSB0"
 
-date=`date "+%d.%m.%Y_%H:%M"`
-timestamp=$(date +"%s")
+# Проверяем наличие устройства
+if [ -e "$usb_device" ]; then
+    # создаем массив с нужными температурами
+    mapfile -t array <<< "$(digitemp_DS9097 -q -a -c /home/digitemp/.digitemprc_4ds)"
 
-# делаем вывод в лог-файл
-echo ${array[@]} $date >> /home/digitemp/temperature.log
-echo ${array[@]} $timestamp >> /home/digitemp/temperature2.log
+    # определяем текущую дату для вывода в лог
+    date=$(date "+%d.%m.%Y_%H:%M")
+    timestamp=$(date +"%s")
 
-#rrdtool update /var/db/rrdtool/temperature.rrd N:${array[0]}:${array[1]}
-#echo ${array[0]}:${array[1]}
+    # делаем вывод в лог-файл
+    echo "${array[@]} $timestamp" >> /home/digitemp/temperature2.log
+
+    sleep 6
+
+    /home/digitemp/sendtemp.sh
+    echo "${date} Записано ${array[@]} ${timestamp}"
+    echo "========================================"
+else
+    echo "${date} Устройство ${usb_device} не обнаружено. Скрипт не выполняется."
+fi

@@ -1,31 +1,37 @@
 #!/bin/bash
 
 # Path to your RRD file
-rrd_file="/var/db/rrdtool/temperature.rrd"
-rrd_file1="/var/db/rrdtool/temperature_inside.rrd"
+rrd_out="/var/db/rrdtool/temperature.rrd"
+rrd_in="/var/db/rrdtool/temperature_inside.rrd"
+rrd_4ds="/var/db/rrdtool/temperature_4ds.rrd"
 
 # Path to save the graph image
-graph_3h="/home/msa/digitemp/site/graph3h.png"
-graph_12h="/home/msa/digitemp/site/graph12h.png"
-graph_24h="/home/msa/digitemp/site/graph24h.png"
-graph_7d="/home/msa/digitemp/site/graph7d.png"
+graph_3h="/home/admin/digitemp/site/graph3h.png"
+graph_12h="/home/admin/digitemp/site/graph12h.png"
+graph_24h="/home/admin/digitemp/site/graph24h.png"
+graph_2d="/home/admin/digitemp/site/graph2d.png"
+graph_7d="/home/admin/digitemp/site/graph7d.png"
 
 # Start time for the graph (24 hours ago)
 start_3h="-3h"
 start_12h="-12h"
 start_24h="-24h"
-start_7d="end-1w"
+start_2d="-2d"
+start_7d="-1w"
 
 # End time for the graph (now)
 end="now"
 
 # Graph parameters
-width="800"                            # Width of the graph in pixels
-height="400"                           # Height of the graph in pixels
-title="Temperature Graph 3 hours"      # Title of the graph
-title12="Temperature Graph 12 hours"   # Title of the graph
-title24="Temperature Graph 24 hours"   # Title of the graph
-title7d="Temperature Graph Last week"  # Title of the graph
+width1="800"			# Width of the graph in pixels
+height1="400"			# Height of the graph in pixels
+width7="1800"
+height7="600"
+title="Temp last 3 hours"	# Title of the graph
+title12="Temp last 12 hours"	# Title of the graph
+title24="Temp last 24 hours"	# Title of the graph
+title2d="Temp last 2 days"	# Title of the graph
+title7d="Temp last 7 days"	# Title of the graph
 vertical_label="Temperature (Celsius)" # Y-axis label
 
 # Function to create the graph using rrdtool graph
@@ -33,15 +39,17 @@ create_graph() {
   local graph_file="$1"
   local start_time="$2"
   local title="$3"
+  local width="$4"
+  local height="$5"
 
   rrdtool graph "$graph_file" \
     --start "$start_time" \
     --end "$end" \
     --width "$width" \
     --height "$height" \
-    --font DEFAULT:14 \
+    --font DEFAULT:16 \
     --font TITLE:24 \
-    --font AXIS:10 \
+    --font AXIS:12 \
     --y-grid 1:2 \
     --color BACK#444444 \
     --color SHADEA#444444 \
@@ -52,8 +60,8 @@ create_graph() {
     --units-exponent 0 \
     --title "$title" \
     --vertical-label "$vertical_label" \
-    DEF:temperature="$rrd_file":temperature:AVERAGE \
-    LINE3:temperature#00FF00:"Temperature" \
+    DEF:temperature="$rrd_out":temperature:AVERAGE \
+    LINE3:temperature#FF5500:"outside" \
     CDEF:tp_17=temperature,0,GT,temperature,100,GT,34,temperature,IF,0,IF AREA:tp_17#FF0000 \
     CDEF:tp_16=temperature,0,GT,temperature,32,GT,32,temperature,IF,0,IF AREA:tp_16#FF1100 \
     CDEF:tp_15=temperature,0,GT,temperature,30,GT,30,temperature,IF,0,IF AREA:tp_15#FF2200 \
@@ -88,21 +96,26 @@ create_graph() {
     CDEF:tm_03=temperature,0,LT,temperature,-6,LT,-6,temperature,IF,0,IF AREA:tm_03#00EEFF \
     CDEF:tm_02=temperature,0,LT,temperature,-4,LT,-4,temperature,IF,0,IF AREA:tm_02#00FFFF \
     CDEF:tm_01=temperature,0,LT,temperature,-2,LT,-2,temperature,IF,0,IF AREA:tm_01#CDFFFF \
-    DEF:temp="$rrd_file1":temp:AVERAGE \
-    LINE2:temp#004DFF:"Inside tC" \
-    GPRINT:temperature:AVERAGE:"Average\: %3.2lfC" \
-    GPRINT:temperature:MIN:"MIN\: %3.2lfC" \
-    GPRINT:temperature:MAX:"MAX\: %3.2lfC" \
-    GPRINT:temperature:LAST:"Current\: %3.2lfC"
+    DEF:temp="$rrd_in":temp:AVERAGE \
+    LINE3:temp#00CA00:"inside" \
+    DEF:heat_transfer_in="$rrd_4ds":heat_transfer_in:AVERAGE \
+    LINE3:heat_transfer_in#CA0000:"heat transfer in" \
+    DEF:heat_transfer_out="$rrd_4ds":heat_transfer_out:AVERAGE \
+    LINE3:heat_transfer_out#0000CA:"heat transfer out" \
+    GPRINT:temp:LAST:"inside\: %3.2lf°C" \
+    GPRINT:temperature:LAST:"outside\: %3.2lf°C" \
+    GPRINT:temperature:AVERAGE:"average outside\: %3.2lf°C" \
+    GPRINT:heat_transfer_in:LAST:"heat in\: %3.2lf°C" \
+    GPRINT:heat_transfer_out:LAST:"heat out\: %3.2lf°C"
 }
 
 # Create the graphs
-create_graph "$graph_3h" "$start_3h" "$title"
+create_graph "$graph_3h" "$start_3h" "$title" "$width1" "$height1"
 sleep 1
-create_graph "$graph_12h" "$start_12h" "$title12"
+create_graph "$graph_12h" "$start_12h" "$title12" "$width1" "$height1"
 sleep 1
-create_graph "$graph_24h" "$start_24h" "$title24"
+create_graph "$graph_24h" "$start_24h" "$title24" "$width1" "$height1"
 sleep 1
-create_graph "$graph_7d" "$start_7d" "$title7d"
-
-
+create_graph "$graph_2d" "$start_2d" "$title2d" "$width1" "$height1"
+sleep 1
+create_graph "$graph_7d" "$start_7d" "$title7d" "$width7" "$height7"
